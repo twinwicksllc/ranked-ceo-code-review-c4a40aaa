@@ -19,7 +19,7 @@ export default async function Page() {
   const { count } = await supabase
     .from('smile_assessments')
     .select('*', { count: 'exact', head: true })
-    .eq('user_id', user.id)
+    .eq('auth_user_id', user.id)
 
   return <SmileDashboard userId={user.id} assessmentCount={count || 0} />
 }
