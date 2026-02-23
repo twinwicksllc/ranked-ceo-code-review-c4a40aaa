@@ -19,7 +19,16 @@
 - [x] A14: Build verification — npm run build passes ✅ (67 routes)
 
 ### Upcoming Phases
-- [ ] Phase B: HVAC Pro
+- [x] Phase B: HVAC Pro
+  - [x] B1: components/hvac/hvac-lead-form.tsx — 5-step HVAC form
+  - [x] B2: app/hvac/layout.tsx — subdomain guard + blue branding
+  - [x] B3: app/hvac/(auth)/signup/page.tsx — HVAC signup with industry metadata
+  - [x] B4: app/hvac/(auth)/login/page.tsx — HVAC login
+  - [x] B5: app/hvac/page.tsx — protected dashboard
+  - [x] B6: app/hvac/hvac-dashboard.tsx — operator dashboard client component
+  - [x] B7: app/hvac/lead/page.tsx — public lead form
+  - [x] B8: app/hvac/lead/success/page.tsx — confirmation page
+  - [x] B9: Build verified ✅ (69 routes)
 - [ ] Phase C: Plumb Pro
 - [ ] Phase D: Spark Pro
 - [ ] Phase E: Database & DNS
