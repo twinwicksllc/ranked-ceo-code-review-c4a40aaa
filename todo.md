@@ -29,6 +29,10 @@
   - [x] B7: app/hvac/lead/page.tsx — public lead form
   - [x] B8: app/hvac/lead/success/page.tsx — confirmation page
   - [x] B9: Build verified ✅ (69 routes)
-- [ ] Phase C: Plumb Pro
-- [ ] Phase D: Spark Pro
+- [x] Phase C: Plumb Pro ✅ (5 routes)
+- [x] Phase D: Spark Pro ✅ (5 routes)
 - [ ] Phase E: Database & DNS
+  - [ ] E1: Run migration in Supabase SQL Editor
+  - [ ] E2: Add 3 custom domains in Vercel
+  - [ ] E3: Add 3 CNAME records in GoDaddy
+  - [ ] E4: Test all 3 subdomains end-to-end
