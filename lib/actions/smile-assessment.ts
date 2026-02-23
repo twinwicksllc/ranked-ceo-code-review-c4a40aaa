@@ -25,7 +25,7 @@ export interface SubmitAssessmentData {
 
 export interface SubmitAssessmentResult {
   success: boolean
-  assessmentId?: string
+  
   error?: string
 }
 
@@ -72,7 +72,6 @@ export async function submitSmileAssessment(
         .from('users')
         .select('account_id')
         .eq('auth_user_id', targetUserId)
-        .single()
 
       if (userError || !userData) {
         // If dentist not found, fall back to Pool Account
@@ -101,7 +100,6 @@ export async function submitSmileAssessment(
           .from('users')
           .select('account_id')
           .eq('auth_user_id', user.id)
-          .single()
 
         if (userError || !userData) {
           // If account not found, fall back to Pool Account
@@ -114,7 +112,7 @@ export async function submitSmileAssessment(
     }
 
     // ── 3. Insert assessment into database ────────────────────────────────────
-    const { data: assessment, error: insertError } = await supabase
+    const { error: insertError } = await supabase
       .from('smile_assessments')
       .insert({
         account_id: accountId,
@@ -135,9 +133,7 @@ export async function submitSmileAssessment(
         medications: data.medications || null,
         allergies: data.allergies || null,
         status: 'pending',
-      })
-      .select('id')
-      .single()
+      }, { returning: 'minimal' })
 
     if (insertError) {
       // Log error with more details for debugging
@@ -190,7 +186,6 @@ export async function submitSmileAssessment(
 
     return {
       success: true,
-      assessmentId: assessment.id,
     }
   } catch (error) {
     // Generic error - no PII in logs
