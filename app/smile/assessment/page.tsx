@@ -5,6 +5,7 @@ import { SmileAssessmentForm } from '@/components/smile/assessment-form'
 import { submitSmileAssessment } from '@/lib/actions/smile-assessment'
 import { ArrowLeft } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { ChatWidget } from '@/components/agent/chat-widget'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -107,6 +108,12 @@ export default async function SmileAssessmentPage({
           </div>
         </div>
       </div>
+
+      <ChatWidget
+        source="smile"
+        primaryColor="#9333ea"
+        position="bottom-right"
+      />
     </div>
   )
 }

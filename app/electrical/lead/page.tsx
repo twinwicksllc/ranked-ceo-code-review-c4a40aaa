@@ -4,6 +4,7 @@ import { Lightbulb } from 'lucide-react'
 import { ElectricalLeadForm } from '@/components/electrical/electrical-lead-form'
 import { submitIndustryLead } from '@/lib/actions/industry-lead'
 import type { ElectricalLeadInput } from '@/lib/validations/industry-lead'
+import { ChatWidget } from '@/components/agent/chat-widget'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -76,6 +77,12 @@ export default async function ElectricalLeadPage({
           ))}
         </div>
       </div>
+
+      <ChatWidget
+        source="electrical"
+        primaryColor="#d97706"
+        position="bottom-right"
+      />
     </div>
   )
 }
