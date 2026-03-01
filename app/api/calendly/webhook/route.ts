@@ -133,17 +133,35 @@ export async function POST(request: NextRequest) {
         let accountId: string | null = null
         let userId: string | null = null
 
+        console.log('[Calendly Webhook] Looking for connection with organizer URI:', organizerUri)
+
         if (organizerUri) {
+          // Normalize URI by removing trailing slash
+          const normalizedUri = organizerUri.replace(/\/$/, '')
+          
           const { data: connection } = await supabase
             .from('calendly_connections')
-            .select('account_id, user_id')
-            .eq('calendly_user_uri', organizerUri)
+            .select('account_id, user_id, calendly_user_uri')
             .eq('is_active', true)
-            .single()
-
-          if (connection) {
-            accountId = connection.account_id
-            userId = connection.user_id
+          
+          if (connection && connection.length > 0) {
+            // Try exact match first
+            const exactMatch = connection.find(c => c.calendly_user_uri === organizerUri)
+            if (exactMatch) {
+              accountId = exactMatch.account_id
+              userId = exactMatch.user_id
+              console.log('[Calendly Webhook] Found exact match for account:', accountId)
+            } else {
+              // Try normalized match
+              const normalizedMatch = connection.find(c => c.calendly_user_uri.replace(/\/$/, '') === normalizedUri)
+              if (normalizedMatch) {
+                accountId = normalizedMatch.account_id
+                userId = normalizedMatch.user_id
+                console.log('[Calendly Webhook] Found normalized match for account:', accountId)
+              } else {
+                console.log('[Calendly Webhook] Available URIs in database:', connection.map(c => c.calendly_user_uri))
+              }
+            }
           }
         }
 
@@ -155,7 +173,7 @@ export async function POST(request: NextRequest) {
             .eq('is_active', true)
             .order('created_at', { ascending: false })
             .limit(1)
-            .single()
+            .maybeSingle()
 
           if (fallback) {
             accountId = fallback.account_id
@@ -164,9 +182,17 @@ export async function POST(request: NextRequest) {
           }
         }
 
+        // Final fallback to DEFAULT_ACCOUNT_ID environment variable
         if (!accountId) {
-          console.warn('[Calendly Webhook] No matching Calendly connection found - storing to default')
-          break
+          const defaultAccountId = process.env.DEFAULT_ACCOUNT_ID
+          if (defaultAccountId) {
+            accountId = defaultAccountId
+            console.log('[Calendly Webhook] Using DEFAULT_ACCOUNT_ID from environment:', accountId)
+          } else {
+            console.error('[Calendly Webhook] No Calendly connection found and DEFAULT_ACCOUNT_ID not set')
+            console.error('[Calendly Webhook] Appointment will NOT be created - please configure DEFAULT_ACCOUNT_ID in Vercel')
+            break
+          }
         }
 
         // Check if appointment already exists
