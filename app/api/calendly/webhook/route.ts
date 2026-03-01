@@ -124,7 +124,15 @@ export async function POST(request: NextRequest) {
         const location = eventData?.scheduled_event?.location?.location || null
         const timezone = eventData?.timezone || 'UTC'
 
+        // Capture invitee notes/questions
+        const questionsAndAnswers = eventData?.questions_and_answers || []
+        const notes = questionsAndAnswers
+          .filter((qa: any) => qa.answer && qa.answer.trim())
+          .map((qa: any) => `${qa.question}: ${qa.answer}`)
+          .join('\n')
+
         console.log('[Calendly Webhook] New invitee:', inviteeEmail, 'for event:', eventUri)
+        console.log('[Calendly Webhook] Notes captured:', notes ? 'Yes' : 'No')
 
         // Find the account that owns this Calendly connection
         const organizerUri =
@@ -208,6 +216,7 @@ export async function POST(request: NextRequest) {
             invitee_name: inviteeName,
             invitee_email: inviteeEmail,
             title: `Call with ${inviteeName}`,
+            description: notes || null,
             status: 'scheduled',
             appointment_type: 'call',
             start_time: startTime,
@@ -238,15 +247,34 @@ export async function POST(request: NextRequest) {
         const inviteeUri = eventData?.uri
         console.log('[Calendly Webhook] Cancelling appointment for invitee:', inviteeUri)
 
+        // First, check if appointment exists
+        const { data: existingAppointment } = await supabase
+          .from('appointments')
+          .select('id, status, calendly_invitee_uri')
+          .eq('calendly_invitee_uri', inviteeUri)
+          .single()
+
+        if (!existingAppointment) {
+          console.warn('[Calendly Webhook] ⚠️ No appointment found with calendly_invitee_uri:', inviteeUri)
+          break
+        }
+
+        console.log('[Calendly Webhook] Found appointment:', {
+          id: existingAppointment.id,
+          current_status: existingAppointment.status,
+          calendly_invitee_uri: existingAppointment.calendly_invitee_uri
+        })
+
+        // Update the appointment status
         const { error } = await supabase
           .from('appointments')
           .update({ status: 'cancelled' })
           .eq('calendly_invitee_uri', inviteeUri)
 
         if (error) {
-          console.error('[Calendly Webhook] Failed to cancel appointment:', error)
+          console.error('[Calendly Webhook] ❌ Failed to cancel appointment:', error)
         } else {
-          console.log('[Calendly Webhook] ✅ Appointment cancelled for invitee:', inviteeUri)
+          console.log('[Calendly Webhook] ✅ Appointment cancelled successfully for invitee:', inviteeUri)
         }
         break
       }
