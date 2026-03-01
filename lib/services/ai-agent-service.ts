@@ -66,10 +66,9 @@ Respond in plain text only - no markdown, no bullet points, no special formattin
 
 function detectBookingIntent(message: string): boolean {
   const bookingKeywords = [
-    'book', 'schedule', 'appointment', 'call', 'meeting', 'available',
-    'availability', 'time', 'slot', 'calendar', 'talk', 'speak', 'chat',
-    'consult', 'consultation', 'set up', 'arrange', 'reserve', 'yes',
-    'sure', 'sounds good', 'let\'s do it', 'ready', 'proceed',
+    'book', 'schedule', 'appointment', 'meeting', 'available',
+    'availability', 'time', 'slot', 'calendar', 
+    'consult', 'consultation', 'set up', 'arrange', 'reserve', 
   ]
   const lower = message.toLowerCase()
   return bookingKeywords.some(kw => lower.includes(kw))
