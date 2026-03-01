@@ -186,6 +186,7 @@ export function AppointmentCard({
               href={appointment.calendly_reschedule_url}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
               className="text-xs text-blue-600 hover:underline flex items-center gap-1"
             >
               <ExternalLink className="w-3 h-3" />
@@ -197,6 +198,7 @@ export function AppointmentCard({
               href={appointment.calendly_cancel_url}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
               className="text-xs text-red-500 hover:underline flex items-center gap-1"
             >
               <XCircle className="w-3 h-3" />
