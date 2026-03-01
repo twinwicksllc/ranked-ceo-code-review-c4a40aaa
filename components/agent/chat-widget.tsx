@@ -19,7 +19,23 @@ interface ChatWidgetProps {
   position?: 'bottom-right' | 'bottom-left'
 }
 
+// Extended response type with our new fields
+interface EnrichedChatResponse extends AgentChatResponse {
+  leadCaptured?: boolean
+  leadId?: string | null
+  hasCalendly?: boolean
+  calendlyUrl?: string | null
+}
+
 function generateSessionId(): string {
+  // Reuse session from sessionStorage so refreshes keep the same session
+  if (typeof window !== 'undefined') {
+    const stored = sessionStorage.getItem('agent_session_id')
+    if (stored) return stored
+    const newId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    sessionStorage.setItem('agent_session_id', newId)
+    return newId
+  }
   return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 }
 
@@ -38,6 +54,7 @@ export function ChatWidget({
   const [bookingUrl, setBookingUrl] = useState<string | null>(null)
   const [showBooking, setShowBooking] = useState(false)
   const [hasGreeted, setHasGreeted] = useState(false)
+  const [leadCaptured, setLeadCaptured] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -80,13 +97,24 @@ export function ChatWidget({
       ai_agent: "Hello! 👋 I'm here to help you. Please share your name, phone number, and email address to get started.",
     }
 
-    const greeting = greetings[source] || greetings.crm
-
     setMessages([{
       role: 'assistant',
-      content: greeting,
+      content: greetings[source] || greetings.crm,
       timestamp: new Date().toISOString(),
     }])
+  }
+
+  // ── Handle close button ────────────────────────────────────────────────────
+  // If lead info was NOT captured, refresh the page so the form is shown again.
+  // If lead info WAS captured, just close the widget.
+  function handleClose() {
+    setIsOpen(false)
+    if (!leadCaptured) {
+      // Small delay so the close animation plays before refresh
+      setTimeout(() => {
+        window.location.reload()
+      }, 300)
+    }
   }
 
   async function sendMessage(text?: string) {
@@ -116,7 +144,7 @@ export function ChatWidget({
         }),
       })
 
-      const data: AgentChatResponse = await res.json()
+      const data: EnrichedChatResponse = await res.json()
 
       setMessages(prev => [...prev, {
         role: 'assistant',
@@ -124,11 +152,31 @@ export function ChatWidget({
         timestamp: new Date().toISOString(),
       }])
 
-      // Handle booking action
+      // Track whether lead info has been captured
+      if (data.leadCaptured) {
+        setLeadCaptured(true)
+      }
+
+      // ── Calendly redirect: user wants to book AND info is captured ────────
+      // Redirect to Calendly in a new tab so they can pick a time
+      if (data.calendlyUrl) {
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: "Great! I'm opening our booking calendar for you now. Please select a time that works best for you. 📅",
+          timestamp: new Date().toISOString(),
+        }])
+        setTimeout(() => {
+          window.open(data.calendlyUrl!, '_blank')
+        }, 1000)
+        return
+      }
+
+      // ── Show inline Calendly iframe (fallback for show_booking action) ────
       if (data.action === 'show_booking' && data.bookingData?.schedulingUrl) {
         setBookingUrl(data.bookingData.schedulingUrl)
         setShowBooking(true)
       }
+
     } catch {
       setMessages(prev => [...prev, {
         role: 'assistant',
@@ -169,8 +217,9 @@ export function ChatWidget({
               </div>
             </div>
             <button
-              onClick={() => setIsOpen(false)}
+              onClick={handleClose}
               className="p-1 rounded-full hover:bg-white/20 transition-colors"
+              aria-label="Close chat"
             >
               <X className="w-4 h-4" />
             </button>
@@ -243,7 +292,7 @@ export function ChatWidget({
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Quick replies */}
+              {/* Quick replies - shown only on first message */}
               {messages.length === 1 && (
                 <div className="px-4 py-2 flex gap-2 flex-wrap border-t border-gray-100 bg-white">
                   {['I need help', 'Book a call', 'Get a quote'].map(reply => (

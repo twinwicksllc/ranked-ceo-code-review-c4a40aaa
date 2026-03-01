@@ -1,15 +1,105 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { chat, getGreetingMessage, extractLeadInfo } from '@/lib/services/ai-agent-service'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { chat, extractLeadInfo } from '@/lib/services/ai-agent-service'
 import { getEventTypes } from '@/lib/services/calendly-service'
 import { agentConversationService } from '@/lib/services/agent-conversation-service'
 import { agentChatSchema } from '@/lib/validations/appointment'
 import type { AgentMessage, AppointmentSource } from '@/lib/types/appointment'
+import type { IndustryType } from '@/lib/types/industry-lead'
 
 export const dynamic = 'force-dynamic'
 
 // Default account ID for general company bookings
 const DEFAULT_ACCOUNT_ID = process.env.DEFAULT_ACCOUNT_ID || '00000000-0000-4000-a000-000000000001'
+
+// ─── Duplicate Check & Lead Upsert ───────────────────────────────────────────
+// Checks if a lead already exists by email or phone within the same account.
+// If found, updates their record. If not, creates a new one.
+// Returns the lead ID.
+async function upsertChatLead(
+  supabase: any,
+  accountId: string,
+  source: AppointmentSource,
+  leadInfo: { name?: string; email?: string; phone?: string }
+): Promise<string | null> {
+  try {
+    const industry = ['hvac', 'plumbing', 'electrical'].includes(source)
+      ? source as IndustryType
+      : null
+
+    // Only create industry_leads for industry subdomains
+    if (!industry) return null
+
+    // ── Duplicate check on email OR phone ──────────────────────────────────
+    let existingLead: any = null
+
+    if (leadInfo.email) {
+      const { data } = await supabase
+        .from('industry_leads')
+        .select('id, customer_name, customer_email, customer_phone')
+        .eq('account_id', accountId)
+        .eq('industry', industry)
+        .ilike('customer_email', leadInfo.email)
+        .maybeSingle()
+      existingLead = data
+    }
+
+    if (!existingLead && leadInfo.phone) {
+      const normalizedPhone = leadInfo.phone.replace(/\D/g, '')
+      const { data } = await supabase
+        .from('industry_leads')
+        .select('id, customer_name, customer_email, customer_phone')
+        .eq('account_id', accountId)
+        .eq('industry', industry)
+        .ilike('customer_phone', `%${normalizedPhone}%`)
+        .maybeSingle()
+      existingLead = data
+    }
+
+    if (existingLead) {
+      // ── Update existing lead with any new info ─────────────────────────
+      console.log('[Agent Chat] Existing lead found, updating:', existingLead.id)
+      const updates: any = { updated_at: new Date().toISOString() }
+      if (leadInfo.name && !existingLead.customer_name) updates.customer_name = leadInfo.name
+      if (leadInfo.email && !existingLead.customer_email) updates.customer_email = leadInfo.email
+      if (leadInfo.phone && !existingLead.customer_phone) updates.customer_phone = leadInfo.phone
+
+      await supabase.from('industry_leads').update(updates).eq('id', existingLead.id)
+      return existingLead.id
+    }
+
+    // ── Create new lead ────────────────────────────────────────────────────
+    // Only create if we have at minimum a name AND (email OR phone)
+    if (!leadInfo.name || (!leadInfo.email && !leadInfo.phone)) return null
+
+    console.log('[Agent Chat] Creating new lead from chat for industry:', industry)
+    const { data: newLead, error } = await supabase
+      .from('industry_leads')
+      .insert({
+        account_id: accountId,
+        industry,
+        customer_name: leadInfo.name,
+        customer_email: leadInfo.email || '',
+        customer_phone: leadInfo.phone || '',
+        urgency: 'scheduled',
+        preferred_contact_method: leadInfo.email ? 'email' : 'phone',
+        service_details: { source: 'chat_widget' },
+        status: 'new',
+      })
+      .select('id')
+      .single()
+
+    if (error) {
+      console.error('[Agent Chat] Failed to create lead:', error.message)
+      return null
+    }
+
+    return newLead.id
+  } catch (err) {
+    console.error('[Agent Chat] upsertChatLead error:', err)
+    return null
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,7 +116,8 @@ export async function POST(request: NextRequest) {
     const { message, sessionId, source, accountId, leadInfo } = parsed.data
     const resolvedAccountId = accountId || DEFAULT_ACCOUNT_ID
 
-    const supabase = await createClient()
+    // Use admin client so writes bypass RLS (public visitors have no session)
+    const supabase = createAdminClient()
 
     // Get or create conversation using service
     const conversation = await agentConversationService.getOrCreateConversation(
@@ -39,6 +130,7 @@ export async function POST(request: NextRequest) {
 
     // Get Calendly event types for this account
     let eventTypes: any[] = []
+    let calendlySchedulingUrl: string | null = null
     try {
       const { data: connection } = await supabase
         .from('calendly_connections')
@@ -52,6 +144,7 @@ export async function POST(request: NextRequest) {
           connection.access_token,
           connection.calendly_user_uri
         )
+        calendlySchedulingUrl = eventTypes?.[0]?.scheduling_url || null
       }
     } catch (err) {
       console.warn('[Agent Chat] Could not fetch event types:', err)
@@ -74,7 +167,7 @@ export async function POST(request: NextRequest) {
     // Get AI response
     const response = await chat(message, messages, context, eventTypes)
 
-    // Update messages
+    // Update messages array for extraction
     const updatedMessages: AgentMessage[] = [
       ...messages,
       { role: 'user', content: message, timestamp: new Date().toISOString() },
@@ -89,38 +182,45 @@ export async function POST(request: NextRequest) {
       phone: context.leadInfo?.phone || extracted.phone || conversation?.lead_phone || undefined,
     }
 
-    // Update conversation with new messages and lead info
-    if (conversation) {
-      // Update messages
-      await agentConversationService.addMessage(
-        conversation.id,
-        'user',
-        message
-      )
-      await agentConversationService.addMessage(
-        conversation.id,
-        'assistant',
-        response.message
-      )
+    // ── Auto-create/update industry lead when we have enough info ──────────
+    let leadId: string | null = null
+    const hasEnoughInfo = !!(updatedLeadInfo.name && (updatedLeadInfo.email || updatedLeadInfo.phone))
+    if (hasEnoughInfo) {
+      leadId = await upsertChatLead(supabase, resolvedAccountId, source, updatedLeadInfo)
+    }
 
-      // Update lead info if we have new information
+    // ── Update conversation record ─────────────────────────────────────────
+    if (conversation) {
+      await agentConversationService.addMessage(conversation.id, 'user', message)
+      await agentConversationService.addMessage(conversation.id, 'assistant', response.message)
+
       if (updatedLeadInfo.name || updatedLeadInfo.email || updatedLeadInfo.phone) {
-        await agentConversationService.updateLeadInfo(
-          conversation.id,
-          updatedLeadInfo
-        )
+        await agentConversationService.updateLeadInfo(conversation.id, updatedLeadInfo)
       }
 
-      // Update status if booking was confirmed
-      if (response.action === 'booking_confirmed') {
-        await agentConversationService.updateStatus(
-          conversation.id,
-          'booked'
-        )
+      if (response.action === 'booking_confirmed' || response.action === 'show_booking') {
+        await agentConversationService.updateStatus(conversation.id, 'booked')
       }
     }
 
-    return NextResponse.json(response)
+    // ── Attach Calendly URL to response when booking is requested ──────────
+    const wantsBooking = response.action === 'show_booking' || response.action === 'booking_confirmed'
+    if (wantsBooking && hasEnoughInfo && calendlySchedulingUrl) {
+      response.bookingData = {
+        ...response.bookingData,
+        schedulingUrl: calendlySchedulingUrl,
+      }
+    }
+
+    // ── Return enriched response ───────────────────────────────────────────
+    return NextResponse.json({
+      ...response,
+      leadCaptured: hasEnoughInfo,
+      leadId,
+      hasCalendly: !!calendlySchedulingUrl,
+      calendlyUrl: wantsBooking && hasEnoughInfo ? calendlySchedulingUrl : null,
+    })
+
   } catch (error) {
     console.error('[Agent Chat] Error:', error)
     return NextResponse.json(
@@ -128,14 +228,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
-}
-
-// GET - Get greeting message for a new session
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url)
-  const source = (searchParams.get('source') || 'crm') as AppointmentSource
-  const leadName = searchParams.get('lead_name') || undefined
-
-  const greeting = getGreetingMessage(source, leadName)
-  return NextResponse.json({ message: greeting })
 }
