@@ -56,7 +56,7 @@ export function ChatWidget({
   // Load greeting when widget opens
   useEffect(() => {
     if (isOpen && !hasGreeted) {
-      loadGreeting()
+      loadStaticGreeting()
       setHasGreeted(true)
     }
   }, [isOpen, hasGreeted])
@@ -68,26 +68,25 @@ export function ChatWidget({
     }
   }, [isOpen])
 
-  async function loadGreeting() {
-    try {
-      const params = new URLSearchParams({ source })
-      if (leadInfo?.name) params.set('lead_name', leadInfo.name)
-
-      const res = await fetch(`/api/agent/chat?${params}`)
-      const data = await res.json()
-
-      setMessages([{
-        role: 'assistant',
-        content: data.message,
-        timestamp: new Date().toISOString(),
-      }])
-    } catch {
-      setMessages([{
-        role: 'assistant',
-        content: "Hello! I'm the RankedCEO AI Assistant. How can I help you today?",
-        timestamp: new Date().toISOString(),
-      }])
+  function loadStaticGreeting() {
+    // Static, industry-specific greetings - no AI calls!
+    const greetings: Record<AppointmentSource, string> = {
+      hvac: "Hi there! 👋 I'm here to help you with your HVAC needs. To get started, could you please share your name, phone number, and email address?",
+      plumbing: "Hello! 👋 I'm here to help with your plumbing needs. Could you please provide your name, phone number, and email address so we can assist you?",
+      electrical: "Hi! 👋 I'm here to help with your electrical needs. Please share your name, phone number, and email address to get started.",
+      smile: "Welcome! 👋 I'm here to help with your smile transformation. Could you please share your name, phone number, and email address?",
+      crm: "Hello! 👋 I'm here to help you. Please share your name, phone number, and email address to get started.",
+      manual: "Hello! 👋 I'm here to help you. Please share your name, phone number, and email address to get started.",
+      ai_agent: "Hello! 👋 I'm here to help you. Please share your name, phone number, and email address to get started.",
     }
+
+    const greeting = greetings[source] || greetings.crm
+
+    setMessages([{
+      role: 'assistant',
+      content: greeting,
+      timestamp: new Date().toISOString(),
+    }])
   }
 
   async function sendMessage(text?: string) {
@@ -247,7 +246,7 @@ export function ChatWidget({
               {/* Quick replies */}
               {messages.length === 1 && (
                 <div className="px-4 py-2 flex gap-2 flex-wrap border-t border-gray-100 bg-white">
-                  {['Book a call', 'Learn more', 'Get a quote'].map(reply => (
+                  {['I need help', 'Book a call', 'Get a quote'].map(reply => (
                     <button
                       key={reply}
                       onClick={() => sendMessage(reply)}
