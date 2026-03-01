@@ -42,26 +42,36 @@ export class AgentConversationService {
         .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(1)
-        .single()
+        .maybeSingle()
 
       if (existing && !existing.error) {
+        console.log('[AgentConversationService] Found existing conversation:', existing.id)
         return existing
       }
 
-      // Create new conversation
+      // Create new conversation using upsert to handle race conditions
+      // If a conversation with this session_id already exists, we'll get it back
       const { data: newConversation, error } = await supabase
         .from('agent_conversations')
-        .insert({
+        .upsert({
           session_id: sessionId,
           source: source,
           account_id: accountId || null,
           messages: [],
           status: 'active',
+        }, {
+          onConflict: 'session_id',
+          ignoreDuplicates: false,
         })
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('[AgentConversationService] Upsert error:', error)
+        throw error
+      }
+      
+      console.log('[AgentConversationService] Created/retrieved conversation:', newConversation.id)
       return newConversation
     } catch (error) {
       console.error('[AgentConversationService] Error getting/creating conversation:', error)

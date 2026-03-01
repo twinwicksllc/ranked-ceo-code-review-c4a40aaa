@@ -46,10 +46,10 @@ async function upsertChatLead(
       console.log('[Agent Chat] Checking for existing lead by email:', leadInfo.email)
       const { data, error } = await supabase
         .from('industry_leads')
-        .select('id, customer_name, customer_email, customer_phone')
+        .select('id, lead_name, lead_email, lead_phone')
         .eq('account_id', accountId)
         .eq('industry', industry)
-        .ilike('customer_email', leadInfo.email)
+        .ilike('lead_email', leadInfo.email)
         .maybeSingle()
       
       if (error) {
@@ -68,16 +68,16 @@ async function upsertChatLead(
       // to handle formats like (555) 123-4567 vs 5551234567 vs 555-123-4567
       const { data: phoneLeads, error } = await supabase
         .from('industry_leads')
-        .select('id, customer_name, customer_email, customer_phone')
+        .select('id, lead_name, lead_email, lead_phone')
         .eq('account_id', accountId)
         .eq('industry', industry)
-        .not('customer_phone', 'is', null)
+        .not('lead_phone', 'is', null)
 
       if (error) {
         console.error('[Agent Chat] Phone lookup error:', error)
       } else if (phoneLeads) {
         existingLead = phoneLeads.find((lead: any) => {
-          const storedNormalized = (lead.customer_phone || '').replace(/\D/g, '')
+          const storedNormalized = (lead.lead_phone || '').replace(/\D/g, '')
           return storedNormalized === normalizedPhone && normalizedPhone.length >= 10
         }) || null
         console.log('[Agent Chat] Phone lookup result:', existingLead ? 'Found' : 'Not found')
@@ -88,9 +88,9 @@ async function upsertChatLead(
       // ── Update existing lead with any new info ─────────────────────────────────────────
       console.log('[Agent Chat] Existing lead found, updating:', existingLead.id)
       const updates: any = { updated_at: new Date().toISOString() }
-      if (leadInfo.name && !existingLead.customer_name) updates.customer_name = leadInfo.name
-      if (leadInfo.email && !existingLead.customer_email) updates.customer_email = leadInfo.email
-      if (leadInfo.phone && !existingLead.customer_phone) updates.customer_phone = leadInfo.phone
+      if (leadInfo.name && !existingLead.lead_name) updates.lead_name = leadInfo.name
+      if (leadInfo.email && !existingLead.lead_email) updates.lead_email = leadInfo.email
+      if (leadInfo.phone && !existingLead.lead_phone) updates.lead_phone = leadInfo.phone
 
       console.log('[Agent Chat] Updates to apply:', updates)
       
@@ -123,9 +123,9 @@ async function upsertChatLead(
     console.log('[Agent Chat] Lead data to insert:', {
       account_id: accountId,
       industry,
-      customer_name: leadInfo.name,
-      customer_email: leadInfo.email || '',
-      customer_phone: leadInfo.phone || '',
+      lead_name: leadInfo.name,
+      lead_email: leadInfo.email || '',
+      lead_phone: leadInfo.phone || '',
     })
 
     const { data: newLead, error } = await supabase
@@ -133,9 +133,9 @@ async function upsertChatLead(
       .insert({
         account_id: accountId,
         industry,
-        customer_name: leadInfo.name,
-        customer_email: leadInfo.email || '',
-        customer_phone: leadInfo.phone || '',
+        lead_name: leadInfo.name,
+        lead_email: leadInfo.email || '',
+        lead_phone: leadInfo.phone || '',
         urgency: 'scheduled',
         preferred_contact_method: leadInfo.email ? 'email' : 'phone',
         service_details: { source: 'chat_widget' },
