@@ -9,7 +9,9 @@ SELECT
   account_id,
   user_id,
   calendly_user_uri,
-  calendly_org_uri,
+  calendly_user_name,
+  calendly_user_email,
+  calendly_organization_uri,
   is_active,
   created_at,
   updated_at,
@@ -32,6 +34,7 @@ SELECT
   account_id,
   user_id,
   calendly_user_uri,
+  calendly_user_name,
   is_active,
   created_at
 FROM calendly_connections
