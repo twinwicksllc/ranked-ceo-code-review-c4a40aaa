@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import * as crypto from 'crypto'
 
 export const dynamic = 'force-dynamic'
@@ -108,7 +108,8 @@ export async function POST(request: NextRequest) {
 
   // 5. Handle events
   try {
-    const supabase = await createClient()
+    // Use admin client to bypass RLS - webhook has no user session
+    const supabase = createAdminClient()
 
     switch (eventType) {
       case 'invitee.created': {
