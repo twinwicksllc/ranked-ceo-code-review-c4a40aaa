@@ -12,6 +12,12 @@ import type {
 
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta'
 
+// Model selection:
+// - gemini-2.5-flash: fast, cost-effective for chat responses
+// - gemini-2.5-pro: advanced reasoning for intent detection
+const GEMINI_CHAT_MODEL = 'gemini-2.5-flash'
+const GEMINI_INTENT_MODEL = 'gemini-2.5-pro'
+
 // Source-specific context for the agent
 const SOURCE_CONTEXT: Record<AppointmentSource, string> = {
   hvac: 'HVAC (heating, ventilation, and air conditioning) services including installation, repair, and maintenance',
@@ -68,6 +74,64 @@ function detectBookingIntent(message: string): boolean {
   const lower = message.toLowerCase()
   return bookingKeywords.some(kw => lower.includes(kw))
 }
+
+// Advanced intent detection using gemini-2.5-pro for higher accuracy
+export async function detectAdvancedBookingIntent(
+  messages: AgentMessage[]
+): Promise<{ detected: boolean; confidence: number; notes?: string }> {
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) return { detected: false, confidence: 0 }
+
+  const recentMessages = messages
+    .slice(-6)
+    .map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
+    .join('\n')
+
+  const prompt = `Analyze this conversation and determine if the user wants to book an appointment or schedule a call.
+
+Conversation:
+${recentMessages}
+
+Respond ONLY with valid JSON (no markdown, no code blocks):
+{"detected": true or false, "confidence": 0.0 to 1.0, "notes": "brief reason"}`
+
+  try {
+    const response = await fetch(
+      `${GEMINI_API_BASE}/models/${GEMINI_INTENT_MODEL}:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.1,
+            maxOutputTokens: 128,
+          },
+        }),
+      }
+    )
+
+    if (!response.ok) {
+      console.warn('[AI Agent] Intent detection API error:', response.status)
+      return { detected: false, confidence: 0 }
+    }
+
+    const data = await response.json()
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}'
+    const cleaned = text.replace(/```json\n?|\n?```/g, '').trim()
+    const parsed = JSON.parse(cleaned)
+
+    return {
+      detected: parsed.detected ?? false,
+      confidence: parsed.confidence ?? 0,
+      notes: parsed.notes,
+    }
+  } catch (err) {
+    console.warn('[AI Agent] Intent detection failed, falling back to keyword detection:', err)
+    return { detected: false, confidence: 0 }
+  }
+}
+
 
 function detectInfoComplete(
   messages: AgentMessage[],
@@ -156,7 +220,7 @@ export async function chat(
   }
 
   const response = await fetch(
-    `${GEMINI_API_BASE}/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    `${GEMINI_API_BASE}/models/${GEMINI_CHAT_MODEL}:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -187,7 +251,19 @@ export async function chat(
     (context.leadInfo?.name || extractedInfo.name) &&
     (context.leadInfo?.email || extractedInfo.email)
   )
-  const wantsToBook = detectBookingIntent(userMessage) || detectBookingIntent(assistantMessage)
+
+  // Use keyword detection as fast first pass, then gemini-2.5-pro for accuracy
+  const keywordIntent = detectBookingIntent(userMessage) || detectBookingIntent(assistantMessage)
+  let wantsToBook = keywordIntent
+
+  if (!keywordIntent && updatedHistory.length >= 4) {
+    // Only call pro model when keyword detection misses and conversation is established
+    const advancedIntent = await detectAdvancedBookingIntent(updatedHistory)
+    if (advancedIntent.detected && advancedIntent.confidence >= 0.75) {
+      wantsToBook = true
+      console.log('[AI Agent] Advanced intent detected:', advancedIntent.notes)
+    }
+  }
 
   let action: AgentChatResponse['action'] = 'none'
   let bookingData: AgentChatResponse['bookingData'] = undefined
