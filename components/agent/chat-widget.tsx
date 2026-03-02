@@ -156,29 +156,20 @@ export function ChatWidget({
         setLeadCaptured(true)
       }
 
-      // ── Redirect logic: triggerBooking boolean OR show_booking action OR
-      //    booking keywords in AI message ─────────────────────────────────
+      // ── Redirect logic: ONLY fire when LLM explicitly sets triggerBooking=true
+      //    OR action is exactly 'show_booking' / 'booking_confirmed'.
+      //    Keyword matching removed — LLM handles intent detection.
       const shouldBook = String(data.triggerBooking).toLowerCase() === 'true'
       const hasShowBookingAction = data.action === 'show_booking' || data.action === 'booking_confirmed'
-      const msgLower = (data.message || '').toLowerCase()
-      const hasBookingKeyword = msgLower.includes('book') ||
-        msgLower.includes('calendly') ||
-        msgLower.includes('appointment') ||
-        msgLower.includes('schedule') ||
-        msgLower.includes('calendar')
 
-      console.error('[FINAL-CHECK] shouldBook:', shouldBook, '| hasShowBookingAction:', hasShowBookingAction, '| hasBookingKeyword:', hasBookingKeyword, '| calendlyUrl:', data.calendlyUrl)
-
-      if ((shouldBook || hasShowBookingAction || (hasBookingKeyword && data.leadCaptured)) && data.calendlyUrl) {
-        console.error('[FINAL-CHECK] REDIRECT TRIGGERED to:', data.calendlyUrl)
+      if ((shouldBook || hasShowBookingAction) && data.calendlyUrl) {
+        console.error('[FINAL-CHECK] REDIRECT TRIGGERED BY:', { triggerBooking: data.triggerBooking, action: data.action })
         window.location.assign(data.calendlyUrl)
         return
       } else {
-        console.error('[FINAL-CHECK] NOT REDIRECTING - conditions:', {
+        console.error('[FINAL-CHECK] NOT REDIRECTING - waiting for LLM booking intent:', {
           shouldBook,
           hasShowBookingAction,
-          hasBookingKeyword,
-          leadCaptured: data.leadCaptured,
           calendlyUrl: data.calendlyUrl,
         })
       }
