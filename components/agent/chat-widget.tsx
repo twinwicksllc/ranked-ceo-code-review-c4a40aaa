@@ -18,6 +18,9 @@ interface ChatWidgetProps {
   }
   primaryColor?: string
   position?: 'bottom-right' | 'bottom-left'
+  // Company referral personalization
+  companyName?: string
+  referralSource?: string
 }
 
 // Extended response type with our new fields
@@ -46,6 +49,8 @@ export function ChatWidget({
   leadInfo,
   primaryColor = '#7c3aed',
   position = 'bottom-right',
+  companyName,
+  referralSource,
 }: ChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<AgentMessage[]>([])
@@ -105,14 +110,17 @@ export function ChatWidget({
   }, []) // run once on mount
 
   function loadStaticGreeting() {
+    // Build personalized company intro if company name is provided
+    const companyIntro = companyName ? ` We're glad you're here from **${companyName}**!` : ''
+
     const greetings: Record<AppointmentSource, string> = {
-      hvac: "Hi there! 👋 I'm here to help you with your HVAC needs. To get started, could you please share your name, phone number, and email address?",
-      plumbing: "Hello! 👋 I'm here to help with your plumbing needs. Could you please provide your name, phone number, and email address so we can assist you?",
-      electrical: "Hi! 👋 I'm here to help with your electrical needs. Please share your name, phone number, and email address to get started.",
-      smile: "Welcome! 👋 I'm here to help with your smile transformation. Could you please share your name, phone number, and email address?",
-      crm: "Hello! 👋 I'm here to help you. Please share your name, phone number, and email address to get started.",
-      manual: "Hello! 👋 I'm here to help you. Please share your name, phone number, and email address to get started.",
-      ai_agent: "Hello! 👋 I'm here to help you. Please share your name, phone number, and email address to get started.",
+      hvac: `Hi there!${companyIntro} 👋 I'm here to help you with your HVAC needs. To get started, could you please share your name, phone number, and email address?`,
+      plumbing: `Hello!${companyIntro} 👋 I'm here to help with your plumbing needs. Could you please provide your name, phone number, and email address so we can assist you?`,
+      electrical: `Hi!${companyIntro} 👋 I'm here to help with your electrical needs. Please share your name, phone number, and email address to get started.`,
+      smile: `Welcome!${companyIntro} 👋 I'm here to help with your smile transformation. Could you please share your name, phone number, and email address?`,
+      crm: `Hello!${companyIntro} 👋 I'm here to help you. Please share your name, phone number, and email address to get started.`,
+      manual: `Hello!${companyIntro} 👋 I'm here to help you. Please share your name, phone number, and email address to get started.`,
+      ai_agent: `Hello!${companyIntro} 👋 I'm here to help you. Please share your name, phone number, and email address to get started.`,
     }
 
     setMessages([{
@@ -155,6 +163,9 @@ export function ChatWidget({
           source,
           accountId,
           leadInfo,
+          // Company referral personalization
+          ...(companyName ? { companyName } : {}),
+          ...(referralSource ? { referralSource } : {}),
         }),
       })
 
@@ -252,7 +263,9 @@ export function ChatWidget({
                 </div>
               )}
               <div>
-                <p className="text-sm font-semibold">AI Assistant</p>
+                <p className="text-sm font-semibold">
+                  {companyName ? `${companyName} Assistant` : 'AI Assistant'}
+                </p>
                 <p className="text-xs opacity-80">● Online</p>
               </div>
             </div>

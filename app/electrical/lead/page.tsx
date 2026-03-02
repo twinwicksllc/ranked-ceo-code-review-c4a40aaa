@@ -25,9 +25,11 @@ async function ElectricalLeadFormWrapper({ operatorId }: { operatorId?: string }
 export default async function ElectricalLeadPage({
   searchParams,
 }: {
-  searchParams: { operatorId?: string }
+  searchParams: { operatorId?: string; company?: string; ref?: string }
 }) {
   const operatorId = searchParams.operatorId
+  const companyName = searchParams.company
+  const referralSource = searchParams.ref
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-amber-25">
@@ -75,6 +77,8 @@ export default async function ElectricalLeadPage({
         source="electrical"
         primaryColor="#d97706"
         position="bottom-right"
+        {...(companyName ? { companyName: decodeURIComponent(companyName) } : {})}
+        {...(referralSource ? { referralSource: decodeURIComponent(referralSource) } : {})}
       />
     </div>
   )

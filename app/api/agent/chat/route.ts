@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { message, sessionId, source, accountId, leadInfo } = parsed.data
+    const { message, sessionId, source, accountId, leadInfo, companyName, referralSource } = parsed.data
     const resolvedAccountId = accountId || DEFAULT_ACCOUNT_ID
 
     console.log('[Agent Chat] Processing message:', {
@@ -167,10 +167,17 @@ export async function POST(request: NextRequest) {
 
     const supabase = createAdminClient()
 
+    // Build referral metadata if present
+    const referralMetadata = (companyName || referralSource) ? {
+      ...(companyName ? { companyName } : {}),
+      ...(referralSource ? { referralSource } : {}),
+    } : undefined
+
     const conversation = await agentConversationService.getOrCreateConversation(
       sessionId,
       source,
-      resolvedAccountId
+      resolvedAccountId,
+      referralMetadata
     )
 
     const messages: AgentMessage[] = conversation?.messages || []
@@ -208,6 +215,9 @@ export async function POST(request: NextRequest) {
         ...(conversation?.lead_phone ? { phone: conversation.lead_phone } : {}),
       },
       availableEventTypes: eventTypes,
+      // Company referral personalization
+      companyName: companyName || (conversation?.metadata as any)?.companyName,
+      referralSource: referralSource || (conversation?.metadata as any)?.referralSource,
     }
 
     const response = await chat(message, messages, context, eventTypes)

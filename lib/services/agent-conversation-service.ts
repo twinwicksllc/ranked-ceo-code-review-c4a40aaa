@@ -6,6 +6,7 @@
 import { createClient } from '@/lib/supabase/server'
 import type {
   AgentConversation,
+  AgentConversationMetadata,
   AgentMessage,
   AgentContext,
   AppointmentSource,
@@ -28,7 +29,8 @@ export class AgentConversationService {
   async getOrCreateConversation(
     sessionId: string,
     source: AppointmentSource,
-    accountId?: string
+    accountId?: string,
+    metadata?: AgentConversationMetadata
   ): Promise<AgentConversation | null> {
     const supabase = await this.getClient()
 
@@ -59,6 +61,7 @@ export class AgentConversationService {
           account_id: accountId || null,
           messages: [],
           status: 'active',
+          ...(metadata ? { metadata } : {}),
         }, {
           onConflict: 'session_id',
           ignoreDuplicates: false,
@@ -329,6 +332,45 @@ export class AgentConversationService {
         completed: 0,
         bySource: {},
       }
+    }
+  }
+
+  // ============================================================
+  // Update Conversation Metadata (Referral Tracking)
+  // ============================================================
+
+  async updateMetadata(
+    conversationId: string,
+    metadata: AgentConversationMetadata
+  ): Promise<boolean> {
+    const supabase = await this.getClient()
+
+    try {
+      // Merge with existing metadata
+      const { data: existing } = await supabase
+        .from('agent_conversations')
+        .select('metadata')
+        .eq('id', conversationId)
+        .single()
+
+      const mergedMetadata = {
+        ...(existing?.metadata || {}),
+        ...metadata,
+      }
+
+      const { error } = await supabase
+        .from('agent_conversations')
+        .update({
+          metadata: mergedMetadata,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', conversationId)
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('[AgentConversationService] Error updating metadata:', error)
+      return false
     }
   }
 

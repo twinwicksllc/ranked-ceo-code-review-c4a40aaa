@@ -25,9 +25,11 @@ async function PlumbingLeadFormWrapper({ operatorId }: { operatorId?: string }) 
 export default async function PlumbingLeadPage({
   searchParams,
 }: {
-  searchParams: { operatorId?: string }
+  searchParams: { operatorId?: string; company?: string; ref?: string }
 }) {
   const operatorId = searchParams.operatorId
+  const companyName = searchParams.company
+  const referralSource = searchParams.ref
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-teal-25">
@@ -75,6 +77,8 @@ export default async function PlumbingLeadPage({
         source="plumbing"
         primaryColor="#0d9488"
         position="bottom-right"
+        {...(companyName ? { companyName: decodeURIComponent(companyName) } : {})}
+        {...(referralSource ? { referralSource: decodeURIComponent(referralSource) } : {})}
       />
     </div>
   )

@@ -26,9 +26,11 @@ async function AssessmentClientWrapper({ dentistId }: { dentistId?: string }) {
 export default async function SmileAssessmentPage({
   searchParams,
 }: {
-  searchParams: { dentistId?: string }
+  searchParams: { dentistId?: string; company?: string; ref?: string }
 }) {
   const dentistId = searchParams.dentistId
+  const companyName = searchParams.company
+  const referralSource = searchParams.ref
   const POOL_ACCOUNT_ID = '00000000-0000-4000-a000-000000000004'
   const finalDentistId = dentistId || POOL_ACCOUNT_ID
 
@@ -94,6 +96,8 @@ export default async function SmileAssessmentPage({
         source="smile"
         primaryColor="#9333ea"
         position="bottom-right"
+        {...(companyName ? { companyName: decodeURIComponent(companyName) } : {})}
+        {...(referralSource ? { referralSource: decodeURIComponent(referralSource) } : {})}
       />
     </div>
   )

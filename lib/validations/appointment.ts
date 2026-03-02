@@ -40,6 +40,9 @@ export const agentChatSchema = z.object({
     serviceType: z.string().optional(),
     notes: z.string().optional(),
   }).optional(),
+  // Company referral personalization
+  companyName: z.string().max(200).optional(),
+  referralSource: z.string().max(200).optional(),
 })
 
 export type CreateAppointmentInput = z.infer<typeof createAppointmentSchema>

@@ -333,16 +333,22 @@ export async function chat(
 
 export function getGreetingMessage(
   source: AppointmentSource,
-  leadName?: string
+  leadName?: string,
+  companyName?: string
 ): string {
+  // Build personalized company intro if company name is provided
+  const companyIntro = companyName
+    ? ` We're glad you're here from **${companyName}**!`
+    : ''
+
   const greetings: Record<AppointmentSource, string> = {
-    hvac: `Hi${leadName ? ` ${leadName}` : ''}! I'm the RankedCEO AI Assistant. I see you're interested in HVAC services. I'd love to help you schedule a call with one of our specialists. What's the best way to reach you?`,
-    plumbing: `Hi${leadName ? ` ${leadName}` : ''}! I'm the RankedCEO AI Assistant. Thanks for reaching out about plumbing services. Let me help you get connected with our team. Can I get your name and email to get started?`,
-    electrical: `Hi${leadName ? ` ${leadName}` : ''}! I'm the RankedCEO AI Assistant. I see you're looking for electrical services. I'd be happy to schedule a consultation for you. What's your name and best email address?`,
-    smile: `Hi${leadName ? ` ${leadName}` : ''}! I'm the RankedCEO AI Assistant. Thank you for completing your smile assessment! Our dental team would love to discuss your results. Can I help you schedule a consultation?`,
-    crm: `Hello${leadName ? ` ${leadName}` : ''}! I'm the RankedCEO AI Assistant. I'm here to help you schedule a call or appointment. How can I assist you today?`,
-    manual: `Hello${leadName ? ` ${leadName}` : ''}! I'm the RankedCEO AI Assistant. How can I help you today?`,
-    ai_agent: `Hello${leadName ? ` ${leadName}` : ''}! I'm the RankedCEO AI Assistant. How can I help you today?`,
+    hvac: `Hi${leadName ? ` ${leadName}` : ''}!${companyIntro} 👋 I'm here to help you with your HVAC needs. To get started, could you please share your name, phone number, and email address?`,
+    plumbing: `Hello${leadName ? ` ${leadName}` : ''}!${companyIntro} 👋 I'm here to help with your plumbing needs. Could you please provide your name, phone number, and email address so we can assist you?`,
+    electrical: `Hi${leadName ? ` ${leadName}` : ''}!${companyIntro} 👋 I'm here to help with your electrical needs. Please share your name, phone number, and email address to get started.`,
+    smile: `Welcome${leadName ? ` ${leadName}` : ''}!${companyIntro} 👋 I'm here to help with your smile transformation. Could you please share your name, phone number, and email address?`,
+    crm: `Hello${leadName ? ` ${leadName}` : ''}!${companyIntro} 👋 I'm here to help you schedule a call or appointment. How can I assist you today?`,
+    manual: `Hello${leadName ? ` ${leadName}` : ''}!${companyIntro} 👋 I'm here to help you. Please share your name, phone number, and email address to get started.`,
+    ai_agent: `Hello${leadName ? ` ${leadName}` : ''}!${companyIntro} 👋 I'm here to help you. Please share your name, phone number, and email address to get started.`,
   }
 
   return greetings[source] || greetings.crm

@@ -26,9 +26,11 @@ async function HvacLeadFormWrapper({ operatorId }: { operatorId?: string }) {
 export default async function HvacLeadPage({
   searchParams,
 }: {
-  searchParams: { operatorId?: string }
+  searchParams: { operatorId?: string; company?: string; ref?: string }
 }) {
   const operatorId = searchParams.operatorId
+  const companyName = searchParams.company
+  const referralSource = searchParams.ref
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-25">
@@ -76,6 +78,8 @@ export default async function HvacLeadPage({
         source="hvac"
         primaryColor="#2563eb"
         position="bottom-right"
+        {...(companyName ? { companyName: decodeURIComponent(companyName) } : {})}
+        {...(referralSource ? { referralSource: decodeURIComponent(referralSource) } : {})}
       />
     </div>
   )

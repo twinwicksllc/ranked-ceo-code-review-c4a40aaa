@@ -193,6 +193,15 @@ export interface AgentMessage {
   metadata?: Record<string, any>
 }
 
+export interface AgentConversationMetadata {
+  companyName?: string
+  referralSource?: string
+  utmSource?: string
+  utmMedium?: string
+  utmCampaign?: string
+  [key: string]: string | undefined
+}
+
 export interface AgentConversation {
   id: string
   created_at: string
@@ -206,6 +215,7 @@ export interface AgentConversation {
   messages: AgentMessage[]
   appointment_id?: string | null
   status: 'active' | 'booked' | 'abandoned' | 'completed'
+  metadata?: AgentConversationMetadata | null
 }
 
 export interface AgentContext {
@@ -220,6 +230,9 @@ export interface AgentContext {
     notes?: string
   }
   availableEventTypes?: CalendlyEventType[]
+  // Company referral personalization
+  companyName?: string
+  referralSource?: string
 }
 
 export interface AgentChatRequest {
@@ -228,6 +241,9 @@ export interface AgentChatRequest {
   source: AppointmentSource
   accountId?: string
   leadInfo?: AgentContext['leadInfo']
+  // Company referral personalization
+  companyName?: string
+  referralSource?: string
 }
 
 export interface AgentChatResponse {
