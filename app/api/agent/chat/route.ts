@@ -297,6 +297,7 @@ export async function POST(request: NextRequest) {
     }
 
     // HARD-CODED FALLBACK: Force local regex check to avoid 'Valued Lead'
+      console.error('[DEPLOYMENT-TIMESTAMP] Code executed at:', new Date().toISOString())
     if (!updatedLeadInfo.name || updatedLeadInfo.name === 'Valued Lead') {
       const userMessagesText = updatedMessages
         .filter(m => m.role === 'user')
