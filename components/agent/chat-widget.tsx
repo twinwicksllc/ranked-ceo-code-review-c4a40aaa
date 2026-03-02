@@ -173,7 +173,7 @@ export function ChatWidget({
       // The user must explicitly request booking (e.g., "book a call").
       // This allows users to ask questions (like "pricing") after providing info.
       if (data.triggerBooking && data.calendlyUrl) {
-        console.log('[Chat Widget] ✅ TRIGGERING REDIRECT - All conditions met:', {
+        console.error('[Chat Widget] ✅ TRIGGERING REDIRECT - All conditions met:', {
           triggerBooking: data.triggerBooking,
           triggerBookingType: typeof data.triggerBooking,
           calendlyUrl: data.calendlyUrl,
@@ -189,7 +189,7 @@ export function ChatWidget({
         }, 800)
         return
       } else {
-        console.log('[Chat Widget] ❌ NOT REDIRECTING - Conditions not met:', {
+        console.error('[Chat Widget] ❌ NOT REDIRECTING - Conditions not met:', {
           triggerBooking: data.triggerBooking,
           triggerBookingType: typeof data.triggerBooking,
           calendlyUrl: data.calendlyUrl,

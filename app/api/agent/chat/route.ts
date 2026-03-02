@@ -126,7 +126,7 @@ async function upsertChatLead(
     const leadData = {
       account_id: accountId,
       industry,
-      lead_name: leadInfo.name || 'Unknown', // FIX 3: Never undefined — default to 'Unknown'
+      lead_name: leadInfo.name || 'Valued Lead', // FIX 3: Never undefined — default to 'Unknown'
       lead_email: leadInfo.email || '',
       lead_phone: leadInfo.phone || '',
     }
@@ -248,6 +248,17 @@ export async function POST(request: NextRequest) {
 
     // Extract lead info from full conversation (including current turn)
     const extracted = extractLeadInfo(updatedMessages)
+    
+    console.log('[Agent Chat] Extraction results:', {
+      extracted,
+      contextLeadInfo: context.leadInfo,
+      conversationLead: {
+        name: conversation?.lead_name,
+        email: conversation?.lead_email,
+        phone: conversation?.lead_phone,
+      },
+    })
+    
     const updatedLeadInfo = {
       name: context.leadInfo?.name || extracted.name || conversation?.lead_name || undefined,
       email: context.leadInfo?.email || extracted.email || conversation?.lead_email || undefined,
