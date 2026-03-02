@@ -53,6 +53,17 @@ summarized_conversations/
 *.pdf
 *.mht
 
+# Exception: product logos in public/logos/ must be tracked
+!public/logos/*.png
+!public/logos/*.jpg
+!public/logos/*.jpeg
+!public/logos/*.gif
+!public/logos/*.svg
+!public/logos/*.webp
+!public/*.png
+!public/*.jpg
+!public/*.svg
+
 # Documentation that may contain secrets
 PUSH_INSTRUCTIONS.md
 GET_SCHEMA_INSTRUCTIONS.md
