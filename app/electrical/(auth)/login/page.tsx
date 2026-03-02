@@ -91,7 +91,10 @@ export default function ElectricalLoginPage() {
             <Link href="/signup" className="font-medium text-amber-600 hover:underline">Create one</Link>
           </p>
           <p className="text-xs text-gray-400">
-            Spark Pro operators only. Wrong portal?{' '}
+            Spark Pro operators only.
+          </p>
+          <p className="text-xs text-gray-400">
+            Wrong portal?{' '}
             <a href="https://smile.rankedceo.com" className="text-purple-500 hover:underline">Smile</a>
             {' · '}
             <a href="https://hvac.rankedceo.com" className="text-blue-500 hover:underline">HVAC</a>

@@ -130,7 +130,10 @@ export default function SmileLoginPage() {
             </Link>
           </p>
           <p className="text-xs text-gray-400">
-            Smile MakeOver dentists only. Wrong portal?{' '}
+            Smile MakeOver dentists only.
+          </p>
+          <p className="text-xs text-gray-400">
+            Wrong portal?{' '}
             <a href="https://hvac.rankedceo.com" className="text-blue-500 hover:underline">HVAC</a>
             {' · '}
             <a href="https://plumbing.rankedceo.com" className="text-teal-500 hover:underline">Plumbing</a>

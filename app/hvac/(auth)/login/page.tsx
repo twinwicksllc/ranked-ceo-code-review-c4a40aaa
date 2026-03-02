@@ -130,7 +130,10 @@ export default function HvacLoginPage() {
             </Link>
           </p>
           <p className="text-xs text-gray-400">
-            HVAC Pro operators only. Wrong portal?{' '}
+            HVAC Pro operators only.
+          </p>
+          <p className="text-xs text-gray-400">
+            Wrong portal?{' '}
             <a href="https://smile.rankedceo.com" className="text-blue-500 hover:underline">Smile</a>
             {' · '}
             <a href="https://plumbing.rankedceo.com" className="text-teal-500 hover:underline">Plumbing</a>
