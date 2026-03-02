@@ -176,7 +176,7 @@ export function ChatWidget({
       const shouldBook = String(data.triggerBooking).toLowerCase() === 'true'
       
       // EMERGENCY: Force redirect if AI response contains "show_booking" regardless of triggerBooking
-      const hasShowBookingAction = data.action === 'show_booking' || data.message.toLowerCase().includes('show_booking')
+      const hasShowBookingAction = data.action === 'show_booking' || (data.message || '').toLowerCase().includes('show_booking')
       
       if ((shouldBook || hasShowBookingAction) && data.calendlyUrl) {
         console.error('[FINAL-CHECK] REDIRECT TRIGGERED')
