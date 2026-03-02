@@ -150,6 +150,10 @@ export function ChatWidget({
       })
 
       const data: EnrichedChatResponse = await res.json()
+      console.log('[Chat Widget] Full API response:', data)
+      console.log('[Chat Widget] triggerBooking type:', typeof data.triggerBooking)
+      console.log('[Chat Widget] triggerBooking value:', data.triggerBooking)
+      console.log('[Chat Widget] calendlyUrl value:', data.calendlyUrl)
 
       setMessages(prev => [...prev, {
         role: 'assistant',
@@ -169,19 +173,31 @@ export function ChatWidget({
       // The user must explicitly request booking (e.g., "book a call").
       // This allows users to ask questions (like "pricing") after providing info.
       if (data.triggerBooking && data.calendlyUrl) {
-        console.log('[Chat Widget] Triggering Calendly redirect:', {
+        console.log('[Chat Widget] ✅ TRIGGERING REDIRECT - All conditions met:', {
           triggerBooking: data.triggerBooking,
+          triggerBookingType: typeof data.triggerBooking,
           calendlyUrl: data.calendlyUrl,
         })
         
+        // Alert to prove this branch is being hit
+        window.alert('Redirecting to Calendly...')
+        
         // Redirect to Calendly in same tab after short delay so user sees the message
         setTimeout(() => {
-          // Redirecting to Calendly
-            console.log('[Chat Widget] Opening Calendly:', data.calendlyUrl)
-            window.location.href = data.calendlyUrl!
+          console.log('[Chat Widget] Executing redirect to:', data.calendlyUrl)
+          window.location.href = data.calendlyUrl!
         }, 800)
         return
+      } else {
+        console.log('[Chat Widget] ❌ NOT REDIRECTING - Conditions not met:', {
+          triggerBooking: data.triggerBooking,
+          triggerBookingType: typeof data.triggerBooking,
+          calendlyUrl: data.calendlyUrl,
+          hasTriggerBooking: !!data.triggerBooking,
+          hasCalendlyUrl: !!data.calendlyUrl,
+        })
       }
+
 
       // ── Show inline Calendly iframe (fallback for show_booking action) ───────
       if (data.action === 'show_booking' && data.bookingData?.schedulingUrl) {
