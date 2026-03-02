@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Smile } from 'lucide-react'
+import { IndustryLogo } from '@/components/ui/industry-logo'
 import { createClient } from '@/lib/supabase/client'
 import { useRecaptcha } from '@/lib/hooks/use-recaptcha'
 import { Button } from '@/components/ui/button'
@@ -84,12 +84,10 @@ export default function SmileSignupPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-purple-100 p-4">
       <Card className="w-full max-w-md border-purple-200 shadow-lg">
         <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-2">
-            <div className="rounded-full bg-purple-100 p-3">
-              <Smile className="h-8 w-8 text-purple-600" />
-            </div>
+          <div className="flex justify-center mb-4">
+            <IndustryLogo industry="smile" height={56} priority />
           </div>
-          <CardTitle className="text-2xl font-bold text-gray-900">Smile MakeOver</CardTitle>
+          <CardTitle className="sr-only">Smile MakeOver</CardTitle>
           <CardDescription className="text-gray-500">
             Create your dentist account to start qualifying patients
           </CardDescription>

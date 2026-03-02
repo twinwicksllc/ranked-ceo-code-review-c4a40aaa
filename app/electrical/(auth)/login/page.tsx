@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Lightbulb } from 'lucide-react'
+import { IndustryLogo } from '@/components/ui/industry-logo'
 import { createClient } from '@/lib/supabase/client'
 import { useRecaptcha } from '@/lib/hooks/use-recaptcha'
 import { Button } from '@/components/ui/button'
@@ -58,12 +58,10 @@ export default function ElectricalLoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-amber-100 p-4">
       <Card className="w-full max-w-md border-amber-200 shadow-lg">
         <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-2">
-            <div className="rounded-full bg-amber-100 p-3">
-              <Lightbulb className="h-8 w-8 text-amber-600" />
-            </div>
+          <div className="flex justify-center mb-4">
+            <IndustryLogo industry="electrical" height={56} priority />
           </div>
-          <CardTitle className="text-2xl font-bold text-gray-900">Spark Pro</CardTitle>
+          <CardTitle className="sr-only">Spark Pro</CardTitle>
           <CardDescription className="text-gray-500">Sign in to your operator dashboard</CardDescription>
         </CardHeader>
         <CardContent>
