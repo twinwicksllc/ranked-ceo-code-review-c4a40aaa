@@ -124,19 +124,6 @@ async function upsertChatLead(
     // Removed: urgency, preferred_contact_method, service_details, status
     // (these may not exist in the standardized schema)
     
-    // HARD-CODED FALLBACK: Force local regex check to avoid 'Valued Lead'
-    let lead_name = leadInfo.name || 'Valued Lead'
-    if (!lead_name || lead_name === 'Valued Lead') {
-      const userMessages = updatedMessages
-        .filter(m => m.role === 'user')
-        .map(m => m.content)
-        .join(' ')
-      const nameMatch = userMessages.match(/I am ([A-Z][a-z]+ [A-Z][a-z]+)/)
-      if (nameMatch && nameMatch[1]) {
-        lead_name = nameMatch[1]
-        console.error('[EMERGENCY] Name found via hard-coded fallback:', lead_name)
-      }
-    }
     
     const leadData = {
       account_id: accountId,
@@ -307,6 +294,19 @@ export async function POST(request: NextRequest) {
       name: finalName,
       email: context.leadInfo?.email || extracted.email || conversation?.lead_email || undefined,
       phone: context.leadInfo?.phone || extracted.phone || conversation?.lead_phone || undefined,
+    }
+
+    // HARD-CODED FALLBACK: Force local regex check to avoid 'Valued Lead'
+    if (!updatedLeadInfo.name || updatedLeadInfo.name === 'Valued Lead') {
+      const userMessagesText = updatedMessages
+        .filter(m => m.role === 'user')
+        .map(m => m.content)
+        .join(' ')
+      const nameMatch = userMessagesText.match(/I am ([A-Z][a-z]+ [A-Z][a-z]+)/)
+      if (nameMatch && nameMatch[1]) {
+        updatedLeadInfo.name = nameMatch[1]
+        console.error('[EMERGENCY] Name found via hard-coded fallback:', updatedLeadInfo.name)
+      }
     }
 
     console.log('[Agent Chat] Post-extraction check:', {
