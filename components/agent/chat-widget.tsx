@@ -83,6 +83,26 @@ export function ChatWidget({
     }
   }, [isOpen])
 
+
+  // ── Restore chat history from server on mount if session exists ──────────
+  useEffect(() => {
+    const existingSession = typeof window !== 'undefined'
+      ? sessionStorage.getItem('agent_session_id')
+      : null
+    if (!existingSession) return
+
+    fetch(`/api/agent/history?sessionId=${encodeURIComponent(existingSession)}`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.messages && Array.isArray(data.messages) && data.messages.length > 0) {
+          setMessages(data.messages)
+          setHasGreeted(true) // skip static greeting since history loaded
+          if (data.leadCaptured) setLeadCaptured(true)
+        }
+      })
+      .catch(() => { /* silently fail — history restore is best-effort */ })
+  }, []) // run once on mount
+
   function loadStaticGreeting() {
     const greetings: Record<AppointmentSource, string> = {
       hvac: "Hi there! 👋 I'm here to help you with your HVAC needs. To get started, could you please share your name, phone number, and email address?",
@@ -156,23 +176,25 @@ export function ChatWidget({
         setLeadCaptured(true)
       }
 
-      // ── Redirect logic: ONLY fire when LLM explicitly sets triggerBooking=true
-      //    OR action is exactly 'show_booking' / 'booking_confirmed'.
-      //    Keyword matching removed — LLM handles intent detection.
-      const shouldBook = String(data.triggerBooking).toLowerCase() === 'true'
-      const hasShowBookingAction = data.action === 'show_booking' || data.action === 'booking_confirmed'
+      // ── Redirect: ONLY fire when BOTH triggerBooking===true AND action='show_booking'
+      //    Prevents eager redirect when lead info captured but booking not yet requested.
+      const triggerBookingTrue = data.triggerBooking === true
+      const actionIsBooking = data.action === 'show_booking' || data.action === 'booking_confirmed'
 
-      if ((shouldBook || hasShowBookingAction) && data.calendlyUrl) {
-        window.alert('REDIRECT INITIATED to: ' + data.calendlyUrl)
+      console.error('[FINAL-CHECK] Redirect check:', {
+        triggerBooking: data.triggerBooking,
+        action: data.action,
+        triggerBookingTrue,
+        actionIsBooking,
+        calendlyUrl: data.calendlyUrl,
+      })
+
+      if (triggerBookingTrue && actionIsBooking && data.calendlyUrl) {
         console.error('[FINAL-CHECK] REDIRECT TRIGGERED BY:', { triggerBooking: data.triggerBooking, action: data.action })
         window.location.assign(data.calendlyUrl)
         return
       } else {
-        console.error('[FINAL-CHECK] NOT REDIRECTING - waiting for LLM booking intent:', {
-          shouldBook,
-          hasShowBookingAction,
-          calendlyUrl: data.calendlyUrl,
-        })
+        console.error('[FINAL-CHECK] NOT REDIRECTING - waiting for explicit booking intent')
       }
 
       // ── Show inline Calendly iframe (fallback) ────────────────────────

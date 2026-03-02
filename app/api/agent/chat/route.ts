@@ -268,8 +268,8 @@ export async function POST(request: NextRequest) {
     if (!updatedLeadInfo.name || updatedLeadInfo.name === 'Valued Lead') {
       const fullHistory = updatedMessages.map(m => m.content).join(' ')
       console.log('[DEBUG] Testing Regex on:', fullHistory)
-      // Slash-all: look for any 2 capitalized words after a name intro
-      const nameMatch = fullHistory.match(/(?:am|is|I'm|name:)\s*([A-Z][a-z]+\s[A-Z][a-z]+)/)
+        // Refined: match name intro + 1-2 capitalized words, stop at lowercase
+        const nameMatch = fullHistory.match(/(?:I am|name is|I'm)\s+([A-Z][a-z]+(?:\s[A-Z][a-z]+)?)/i)
       if (nameMatch && nameMatch[1]) {
         updatedLeadInfo.name = nameMatch[1]
         console.error('[EMERGENCY] Found Name:', updatedLeadInfo.name)
