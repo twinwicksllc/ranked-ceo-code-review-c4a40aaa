@@ -34,7 +34,7 @@ export function Hero() {
       {/* Background Image */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-md h-[50%] pointer-events-none">
         <Image
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/generated-image.png-hGcIEsVe0tbCYtvlkaFCW9ad1gluW1.jpeg"
+          src="/hero-smile.jpg"
           alt="Smiling woman with beautiful teeth"
           fill
           className="object-contain object-top opacity-60 lg:opacity-80"
