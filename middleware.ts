@@ -32,13 +32,32 @@ const INDUSTRY_MAP: Record<IndustrySubdomain, string> = {
   electrical:  'electrical',
 }
 
-// Paths within industry subdomains that are public (no auth or industry check needed)
+// Public paths on industry subdomains (no auth required)
 const PUBLIC_INDUSTRY_PATH_SEGMENTS = [
-  '/lead',        // public lead intake forms (hvac, plumbing, electrical)
-  '/assessment',  // public assessment form (smile)
-  '/success',     // confirmation pages
-  '/login',       // per-industry login
-  '/signup',      // per-industry signup
+  '/login',
+  '/signup',
+  '/onboarding',
+  '/api/',
+]
+
+// Paths on the CRM domain that are public (no auth required)
+const PUBLIC_CRM_PATHS = [
+  '/',                      // landing page
+  '/login',                 // login page
+  '/signup',                // signup page
+  '/api/auth',              // auth API routes
+  '/api/',                  // all API routes
+  '/_next',                 // Next.js internals
+]
+
+// Paths on the CRM domain that require authentication
+const PROTECTED_CRM_PATHS = [
+  '/dashboard',             // main dashboard
+  '/contacts',              // contacts management
+  '/campaigns',             // campaigns management
+  '/deals',                 // deals/sales pipeline
+  '/appointments',          // appointments
+  '/settings',              // account settings
 ]
 
 export async function middleware(request: NextRequest) {
@@ -122,7 +141,35 @@ export async function middleware(request: NextRequest) {
     return rewrite
   }
 
-  // ── 4. CRM domain → pass through (existing routes) ───────────────────────
+  // ── 4. CRM domain → check auth for protected routes ──────────────────────
+  const { pathname } = request.nextUrl
+  
+  // Check if this is a static/API route (always allowed)
+  const isStaticRoute = [
+    '/_next',
+    '/api/',
+    '/favicon.ico',
+  ].some(p => pathname.startsWith(p))
+  
+  if (isStaticRoute) return response
+
+  // Check if this is a public route (allowed without auth)
+  const isPublicRoute = PUBLIC_CRM_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'))
+  
+  if (isPublicRoute) return response
+
+  // Check if this is a protected route that requires auth
+  const isProtectedRoute = PROTECTED_CRM_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'))
+  
+  if (isProtectedRoute && !user) {
+    // Redirect unauthenticated users to login
+    const loginUrl = request.nextUrl.clone()
+    loginUrl.pathname = '/login'
+    loginUrl.searchParams.set('redirectTo', pathname)
+    return NextResponse.redirect(loginUrl)
+  }
+
+  // All other routes (authenticated routes or unmatched routes) → pass through
   return response
 }
 
