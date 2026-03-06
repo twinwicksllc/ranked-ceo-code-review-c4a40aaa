@@ -34,6 +34,7 @@ const INDUSTRY_MAP: Record<IndustrySubdomain, string> = {
 
 // Public paths on industry subdomains (no auth required)
 const PUBLIC_INDUSTRY_PATH_SEGMENTS = [
+  '/',                  // landing page (smile subdomain only)
   '/login',
   '/signup',
   '/onboarding',
@@ -126,7 +127,19 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    // ── 3b. Rewrite to /{industry}/* internally ───────────────────────────
+    // ── 3b. Special handling for smile subdomain root landing page ─────────
+    // smile.rankedceo.com/ → rewrites to /landing instead of /smile/
+    if (industry === 'smile' && pathname === '/') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/landing'
+      const rewrite = NextResponse.rewrite(url)
+      response.cookies.getAll().forEach(cookie => {
+        rewrite.cookies.set(cookie.name, cookie.value)
+      })
+      return rewrite
+    }
+
+    // ── 3c. Rewrite to /{industry}/* internally ───────────────────────────
     const url = request.nextUrl.clone()
 
     // Don't double-prefix if already starts with /{industry}
