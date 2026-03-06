@@ -1,4 +1,4 @@
-import './style.css';
+import './style.css'
 
 export default function LandingPage() {
   return (
@@ -36,26 +36,26 @@ export default function LandingPage() {
             <div className="hero-right">
               <div className="testimonial">
                 <h3>Get Your Free Estimate</h3>
-                <form onSubmit={handleSubmit}>
+                <form method="POST" action="/api/landing/quote">
                   <div className="form-group">
                     <label htmlFor="fullname">Full Name</label>
-                    <input id="fullname" type="text" placeholder="Full Name" required />
+                    <input id="fullname" type="text" name="fullname" placeholder="Full Name" required />
                   </div>
                   <div className="form-group">
                     <label htmlFor="email">Email Address</label>
-                    <input id="email" type="email" placeholder="Email Address" required />
-                  <form method="POST" action="/api/landing/quote">
-                    <div className="form-group">
-                      <label htmlFor="fullname">Full Name</label>
-                      <input id="fullname" type="text" name="fullname" placeholder="Full Name" required />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="email">Email Address</label>
-                      <input id="email" type="email" name="email" placeholder="Email Address" required />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="phone">Phone Number</label>
-                      <input id="phone" type="tel" name="phone" placeholder="Phone Number" required />
+                    <input id="email" type="email" name="email" placeholder="Email Address" required />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="phone">Phone Number</label>
+                    <input id="phone" type="tel" name="phone" placeholder="Phone Number" required />
+                  </div>
+                  <button type="submit" className="cta-button">GET MY FREE QUOTE</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section className="features">
         <div className="container">
@@ -77,5 +77,5 @@ export default function LandingPage() {
         </div>
       </section>
     </>
-  );
+  )
 }
