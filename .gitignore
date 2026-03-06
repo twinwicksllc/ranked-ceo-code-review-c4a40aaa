@@ -68,6 +68,10 @@ summarized_conversations/
 !public/*.png
 !public/*.jpg
 !public/*.svg
+!public/landing-page/*.png
+!public/landing-page/*.jpg
+!public/landing-page/*.jpeg
+!public/landing-page/*.webp
 
 # Documentation that may contain secrets
 PUSH_INSTRUCTIONS.md
