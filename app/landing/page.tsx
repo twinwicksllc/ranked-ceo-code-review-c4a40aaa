@@ -91,20 +91,8 @@ export default function LandingPage() {
           <p className="proof-subtitle">With over 1,500+ smile makeover cases completed, our before-and-after results demonstrate the life-changing impact of affordable cosmetic dentistry.</p>
           
           <div className="gallery">
-            <div className="gallery-item">
-              <Image src="https://via.placeholder.com/200x200?text=Before+%2F+After+1" alt="Patient transformation 1" width={200} height={200} />
-            </div>
-            <div className="gallery-item">
-              <Image src="https://via.placeholder.com/200x200?text=Before+%2F+After+2" alt="Patient transformation 2" width={200} height={200} />
-            </div>
-            <div className="gallery-item">
-              <Image src="https://via.placeholder.com/200x200?text=Before+%2F+After+3" alt="Patient transformation 3" width={200} height={200} />
-            </div>
-            <div className="gallery-item">
-              <Image src="https://via.placeholder.com/200x200?text=Before+%2F+After+4" alt="Patient transformation 4" width={200} height={200} />
-            </div>
-            <div className="gallery-item">
-              <Image src="https://via.placeholder.com/200x200?text=Before+%2F+After+5" alt="Patient transformation 5" width={200} height={200} />
+            <div className="gallery-item gallery-wide">
+              <Image src="/landing-page/happy_customers.png" alt="Happy customers smiling" width={1200} height={480} />
             </div>
           </div>
           

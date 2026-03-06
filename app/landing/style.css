@@ -334,6 +334,11 @@ body {
     transition: transform 0.3s ease;
 }
 
+.gallery-wide {
+    width: 100%;
+    max-width: 1000px;
+}
+
 .gallery-item:hover {
     transform: translateY(-5px);
 }
