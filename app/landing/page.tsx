@@ -32,14 +32,16 @@ export default function LandingPage() {
         <div className="container hero-container">
           <div className="hero-content">
             <div className="hero-left">
-              <div className="rating">★★★★★ 500+ Happy Patients</div>
-              <h1>A Brand New Smile, <br />For Less Than You Think.</h1>
-              <h2>Premium cosmetic dentistry tailored to your budget. Get the confidence you deserve today.</h2>
+              <div className="rating">⭐ Rated 'Excellent' | 500+ Verified Reviews</div>
+              <h1><span style={{ fontWeight: 400 }}>The Smile You Deserve</span> — <span style={{ fontWeight: 700 }}>Now Within Reach</span></h1>
+              <h2>Affordable Veneers & Cosmetic Dentistry Without Traditional Insurance</h2>
+              <p className="hero-paragraph">Smile MakeOver® gives you access to a nationwide network of verified cosmetic and emergency dentists offering exclusive member-only pricing on veneers, smile makeovers.</p>
               <ul>
-                <li>Stain-resistant, natural-looking veneers</li>
-                <li>0% Interest financing available</li>
-                <li>Completed in as little as 2 visits</li>
-                <li>Lifetime satisfaction guarantee</li>
+                <li>✅ Veneers From As Low As $45/Month*</li>
+                <li>✅ FREE Virtual Smile Consultation</li>
+                <li>✅ Member-Only Discounted Pricing</li>
+                <li>✅ Flexible Financing Available</li>
+                <li>✅ Emergency Dental Access</li>
               </ul>
             </div>
 
@@ -61,6 +63,13 @@ export default function LandingPage() {
                   </div>
                   <button type="submit" className="cta-button">GET MY FREE QUOTE</button>
                 </form>
+              </div>
+
+              <div className="testimonial-card">
+                <p className="testimonial-text">"The best decision I've ever made for my smile. I thought veneers were financially out of reach – Smile MakeOver made it possible."</p>
+                <p className="testimonial-author">Sarah Johnson — via <svg className="google-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <text x="2" y="18" fontSize="12" fontWeight="bold" fill="#4285F4">G</text>
+                </svg> Google</p>
               </div>
             </div>
           </div>
