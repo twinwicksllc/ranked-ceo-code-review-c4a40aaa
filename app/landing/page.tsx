@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import './style.css'
 
 export default function LandingPage() {
@@ -19,7 +20,16 @@ export default function LandingPage() {
       </header>
 
       <section className="hero">
-        <div className="container">
+        <Image
+          src="/smile_hero_image.png"
+          alt="Smile MakeOver hero background"
+          fill
+          priority
+          sizes="100vw"
+          className="hero-image"
+          quality={85}
+        />
+        <div className="container hero-container">
           <div className="hero-content">
             <div className="hero-left">
               <div className="rating">★★★★★ 500+ Happy Patients</div>
