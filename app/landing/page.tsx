@@ -1,14 +1,6 @@
-'use client';
-
 import './style.css';
 
 export default function LandingPage() {
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle form submission here
-    console.log('Form submitted');
-  };
-
   return (
     <>
       <header className="top-bar">
@@ -52,18 +44,18 @@ export default function LandingPage() {
                   <div className="form-group">
                     <label htmlFor="email">Email Address</label>
                     <input id="email" type="email" placeholder="Email Address" required />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="phone">Phone Number</label>
-                    <input id="phone" type="tel" placeholder="Phone Number" required />
-                  </div>
-                  <button type="submit" className="cta-button">GET MY FREE QUOTE</button>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+                  <form method="POST" action="/api/landing/quote">
+                    <div className="form-group">
+                      <label htmlFor="fullname">Full Name</label>
+                      <input id="fullname" type="text" name="fullname" placeholder="Full Name" required />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="email">Email Address</label>
+                      <input id="email" type="email" name="email" placeholder="Email Address" required />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="phone">Phone Number</label>
+                      <input id="phone" type="tel" name="phone" placeholder="Phone Number" required />
 
       <section className="features">
         <div className="container">
