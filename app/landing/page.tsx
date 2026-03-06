@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import './style.css';
 
 export default function LandingPage() {
@@ -15,7 +14,7 @@ export default function LandingPage() {
       <header className="top-bar">
         <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className="logo">
-            <img src="/logos/smile-logo.png" alt="Smile MakeOver Logo" />
+            <img src="/smile_logo.png" alt="Smile MakeOver Logo" />
           </div>
           <div className="header-right">
             <p>Speak to a Specialist: <strong>(800) 555-0199</strong></p>
