@@ -106,9 +106,9 @@ body {
     right: 0 !important;
     top: 0 !important;
     bottom: auto !important;
-    width: 62% !important;
-    max-width: 62% !important;
-    height: 88% !important;
+    width: 43% !important;
+    max-width: 43% !important;
+    height: 62% !important;
     object-fit: cover !important;
     object-position: center top !important;
     z-index: 0 !important;
@@ -485,9 +485,9 @@ body {
     }
     
     .hero-image {
-        width: 60% !important;
-        max-width: 60% !important;
-        height: 84% !important;
+        width: 42% !important;
+        max-width: 42% !important;
+        height: 59% !important;
     }
     
     .hero-content { 
