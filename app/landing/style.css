@@ -58,7 +58,12 @@ body {
     color: #1a1a1a;
     padding: 60px 0;
     overflow: hidden;
-    background: #6B3FA0;
+    background: linear-gradient(90deg, 
+        #6B3FA0 0%, 
+        #6B3FA0 42%, 
+        rgba(107, 63, 160, 0.5) 55%, 
+        transparent 70%, 
+        transparent 100%);
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -72,13 +77,11 @@ body {
     right: 0;
     bottom: 0;
     background: linear-gradient(90deg, 
-        #6B3FA0 0%, 
-        #6B3FA0 30%, 
-        rgba(107, 63, 160, 0.7) 45%, 
-        transparent 65%, 
-        transparent 100%);
+        transparent 0%,
+        transparent 50%,
+        rgba(0, 0, 0, 0.08) 100%);
     pointer-events: none;
-    z-index: 1;
+    z-index: 2;
 }
 
 .hero-image {
@@ -86,27 +89,15 @@ body {
     right: 0 !important;
     top: 0 !important;
     bottom: 0 !important;
-    width: 60% !important;
+    width: 65% !important;
     height: 100% !important;
     object-fit: cover !important;
     z-index: 0 !important;
 }
 
-.hero::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 60%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.1) 100%);
-    pointer-events: none;
-    z-index: 2;
-}
-
 .hero-container {
     position: relative;
-    z-index: 2;
+    z-index: 3;
     width: 100%;
 }
 
