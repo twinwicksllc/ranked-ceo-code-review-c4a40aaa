@@ -14,7 +14,7 @@ export default async function ContactsPage() {
   const { data: userData } = await supabase
     .from('users')
     .select('account_id')
-    .eq('email', user.email)
+    .eq('id', user.id)
     .single()
 
   if (!userData) return null

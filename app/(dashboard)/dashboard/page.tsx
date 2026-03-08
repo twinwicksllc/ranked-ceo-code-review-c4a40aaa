@@ -19,11 +19,11 @@ export default async function DashboardPage() {
     )
   }
 
-  // Get user's account_id by email (matching RLS policy)
+  // Get user's account_id by user ID (matching RLS policy)
   const { data: userData, error: userError } = await supabase
     .from('users')
     .select('account_id, name')
-    .eq('email', user.email)
+    .eq('id', user.id)
     .single()
 
   // Check onboarding status

@@ -12,7 +12,7 @@ export default async function NewContactPage() {
   const { data: userData } = await supabase
     .from('users')
     .select('account_id')
-    .eq('email', user.email)
+    .eq('id', user.id)
     .single()
 
   if (!userData) redirect('/login')

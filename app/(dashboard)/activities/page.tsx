@@ -76,7 +76,7 @@ export default async function ActivitiesPage({
   const { data: userData } = await supabase
     .from('users')
     .select('account_id')
-    .eq('email', user.email)
+    .eq('id', user.id)
     .single();
 
   if (!userData?.account_id) return null;

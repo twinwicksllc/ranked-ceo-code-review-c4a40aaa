@@ -19,7 +19,7 @@ export async function PUT(request: Request) {
         phone: updates.phone,
         title: updates.title,
       })
-      .eq('email', user.email)
+      .eq('id', user.id)
       .select()
       .single();
 

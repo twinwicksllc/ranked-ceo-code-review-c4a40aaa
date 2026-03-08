@@ -14,7 +14,7 @@ export default async function PlumbingPage() {
   const { data: userData } = await supabase
     .from('users')
     .select('account_id')
-    .eq('email', user.email)
+    .eq('id', user.id)
     .single()
 
   const { count } = await supabase
