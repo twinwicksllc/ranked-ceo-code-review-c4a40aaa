@@ -53,7 +53,7 @@ export class SendGridService {
    */
   async sendEmail(options: SendGridEmailOptions): Promise<SendGridResponse> {
     try {
-      const mailData: MailDataRequired = {
+      const mailData = {
         to: options.to,
         from: {
           email: options.from,
