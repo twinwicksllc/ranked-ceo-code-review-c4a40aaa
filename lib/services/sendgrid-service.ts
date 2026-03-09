@@ -1,5 +1,4 @@
 // SendGrid Service for RankedCEO CRM
-import { MailDataRequired } from '@sendgrid/mail';
 import sgMail from '@sendgrid/mail';
 
 interface SendGridEmailOptions {
@@ -54,7 +53,7 @@ export class SendGridService {
    */
   async sendEmail(options: SendGridEmailOptions): Promise<SendGridResponse> {
     try {
-      const mailData: MailDataRequired = {
+      const mailData = {
         to: options.to,
         from: {
           email: options.from,
