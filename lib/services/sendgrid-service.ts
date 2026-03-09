@@ -1,6 +1,6 @@
 // SendGrid Service for RankedCEO CRM
-import { MailDataRequired } from '@sendgrid/mail';
 import sgMail from '@sendgrid/mail';
+import type { MailDataRequired } from '@sendgrid/mail';
 
 interface SendGridEmailOptions {
   to: string;
